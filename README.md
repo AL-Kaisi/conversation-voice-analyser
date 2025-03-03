@@ -1,4 +1,4 @@
-# Conversation Voice Analyzer
+# Conversation Voice Analyser
 
 ## Overview
 The **Conversation Voice Analyzer** is an end-to-end application that records, transcribes, and analyzes speech while distinguishing between multiple speakers. It integrates with **Azure Speech-to-Text** for transcription, **Azure SQL Database** for data storage, and **Terraform** for infrastructure automation.
