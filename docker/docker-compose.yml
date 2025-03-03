@@ -1,0 +1,21 @@
+# Define the Docker Compose version
+version: '3.8'
+
+# Define services for backend and frontend
+services:
+  backend:
+    # Build the backend service from the specified directory
+    build: ../backend
+    ports:
+      - "8000:8000"
+    environment:
+      - AZURE_SPEECH_KEY=${AZURE_SPEECH_KEY}
+      - AZURE_SPEECH_REGION=${AZURE_SPEECH_REGION}
+  
+  frontend:
+    # Build the frontend service from the specified directory
+    build: ../frontend
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend

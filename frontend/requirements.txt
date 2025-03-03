@@ -1,0 +1,5 @@
+plaintext
+streamlit
+requests
+numpy
+pandas
