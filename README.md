@@ -247,8 +247,3 @@ This project is licensed under the MIT Licence - see the [LICENCE](LICENCE) file
 - React community for the amazing frontend ecosystem
 - All contributors who help improve this project
 
----
-
-<p align="center">
-  Made with ❤️ by the Conversation Voice Analyser Team
-</p>
