@@ -1,6 +1,7 @@
 fastapi
 uvicorn
-azure-cognitiveservices-speech
+SpeechRecognition
+pyaudio
 python-dotenv
 sounddevice
 numpy
@@ -8,4 +9,6 @@ wave
 sqlalchemy
 psycopg2-binary
 requests
-pyodbc
+python-multipart
+pydub
+webrtcvad

@@ -1,145 +1,253 @@
-# Conversation Voice Analyzer
+# Conversation Voice Analyser
 
 ## Overview
-The **Conversation Voice Analyzer** is an end-to-end application that records, transcribes, and analyzes speech while distinguishing between multiple speakers. It integrates with **Azure Speech-to-Text** for transcription, **Azure SQL Database** for data storage, and **Terraform** for infrastructure automation.
+The **Conversation Voice Analyser** is a comprehensive speech analysis application that records, transcribes, and analyses conversations whilst identifying different speakers. Built with modern web technologies, it operates completely locally without requiring cloud services.
 
-## Features
-- **Speech Recording:** Capture and save audio files.
-- **Speech Recognition:** Convert speech to text using Azure Speech-to-Text.
-- **Speaker Diarization:** Identify and differentiate multiple speakers.
-- **Database Storage:** Store transcriptions in Azure SQL Database.
-- **Web Interface:** Streamlit-based frontend for file uploads and analysis.
-- **Infrastructure as Code:** Deploy cloud infrastructure with Terraform.
-- **Containerization:** Run the application using Docker.
+## Key Features
+- **Recording Management:** Save, playback, and manage audio recordings
+- **Speaker Diarisation:** Automatically identify and separate different speakers
+- **Multi-Language Support:** Transcribe in 15+ languages with auto-detection
+- **Real-Time Processing:** Live transcription with speaker identification
+- **Local Processing:** All data processed locally for privacy
+- **Modern UI:** Responsive React interface with TypeScript
 
 ## Architecture
-The system consists of:
-- **Frontend:** Streamlit UI for uploading audio and displaying results.
-- **Backend:** FastAPI-based API for handling speech processing.
-- **Database:** Azure SQL Database for storing transcriptions.
-- **Cloud Deployment:** Azure App Services for hosting.
-- **Infrastructure:** Terraform for provisioning Azure resources.
+
+```
+┌─────────────────────┐     ┌─────────────────────┐
+│                     │     │                     │
+│  React Frontend     │────▶│  FastAPI Backend    │
+│  (TypeScript)       │     │  (Python)           │
+│                     │     │                     │
+│  • Audio Recording  │     │  • Speech Recognition│
+│  • UI Components    │     │  • Speaker Detection │
+│  • Recording List   │     │  • Database Storage  │
+│                     │     │                     │
+└─────────────────────┘     └──────────┬──────────┘
+                                      │
+                                      ▼
+                            ┌─────────────────────┐
+                            │                     │
+                            │  SQLite Database    │
+                            │                     │
+                            │  • Recordings       │
+                            │  • Transcripts      │
+                            │  • Speaker Data     │
+                            │                     │
+                            └─────────────────────┘
+```
+
+## Processing Flow
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│              │     │              │     │              │     │              │
+│  Microphone  │────▶│ Audio Capture│────▶│ Speech-to-   │────▶│  Speaker     │
+│   Input      │     │ (WebRTC)     │     │    Text      │     │  Diarisation │
+│              │     │              │     │              │     │              │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────┬───────┘
+                                                                      │
+                                                                      ▼
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│              │     │              │     │              │     │              │
+│   Display    │◀────│   React UI   │◀────│   Database   │◀────│   Storage    │
+│   Results    │     │   Update     │     │    Save      │     │  & Analysis  │
+│              │     │              │     │              │     │              │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+```
 
 ## Project Structure
-```plaintext
-conversation-voice-analyzer/
-│── backend/                    # FastAPI backend for processing audio
-│   ├── main.py                  # API entry point
-│   ├── audio_recorder.py        # Audio recording logic
-│   ├── speech_processing.py     # Speech recognition using Azure
-│   ├── diarization.py           # Speaker separation using Azure
-│   ├── database.py              # Database connection
-│   ├── requirements.txt         # Backend dependencies
-│   ├── Dockerfile               # Backend Docker configuration
+```
+conversation-voice-analyser/
+├── backend/                     # FastAPI backend
+│   ├── main.py                 # API endpoints
+│   ├── speech_processing.py    # Speech recognition & diarisation
+│   ├── database.py            # Database models
+│   ├── requirements.txt       # Python dependencies
+│   └── Dockerfile             # Backend container config
 │
-│── frontend/                   # Streamlit web interface
-│   ├── app.py                   # Main UI logic
-│   ├── requirements.txt         # Frontend dependencies
-│   ├── Dockerfile               # Frontend Docker configuration
+├── frontend_react/            # React frontend
+│   ├── src/
+│   │   ├── App.tsx           # Main app component
+│   │   ├── components/       # React components
+│   │   │   ├── AudioRecorder.tsx
+│   │   │   └── RecordingsList.tsx
+│   │   └── services/         # API services
+│   ├── package.json          # Node dependencies
+│   └── Dockerfile            # Frontend container config
 │
-│── terraform/                   # Terraform for infrastructure automation
-│   ├── main.tf                   # Azure resource definitions
-│
-│── .github/                     # CI/CD pipelines
-│   ├── workflows/
-│       ├── deployment.yml        # GitHub Actions for deployment
-│
-│── .gitignore                   # Ignore unnecessary files
-│── README.md                    # Project documentation
+├── docker-compose.yml         # Container orchestration
+└── README.md                 # Documentation
 ```
 
-## Prerequisites
-Before running the project, install:
-- **Python 3.9+**
-- **Terraform**
-- **Azure CLI**
-- **Docker**
-- **FastAPI & Streamlit** (see `requirements.txt`)
+## Technologies Used
 
-## Running Locally
-### 1. Set Up a Virtual Environment
-```sh
-python -m venv venv
-source venv/bin/activate  # macOS/Linux
-venv\Scripts\activate     # Windows
-```
+### Frontend
+- **React** with TypeScript
+- **Vite** for build tooling
+- **Web Audio API** for recording
+- **Modern CSS** for styling
 
-### 2. Install Dependencies
-```sh
-cd backend
-pip install -r requirements.txt
-cd ../frontend
-pip install -r requirements.txt
-```
+### Backend
+- **FastAPI** for REST API
+- **SpeechRecognition** library
+- **WebRTC VAD** for speaker detection
+- **PyDub** for audio processing
+- **SQLAlchemy** for database ORM
 
-### 3. Run the Backend and Frontend
-#### Start Backend (FastAPI)
-```sh
-cd backend
-uvicorn main:app --reload
-```
+### Infrastructure
+- **Docker** for containerisation
+- **Nginx** for frontend serving
+- **SQLite** for local storage
 
-#### Start Frontend (Streamlit)
-```sh
-cd frontend
-streamlit run app.py
-```
+## Quick Start
 
-## Running with Docker
-### 1. Build and Run Containers
-```sh
-cd terraform
-terraform init
-terraform apply -auto-approve
-```
+### Prerequisites
+- Docker and Docker Compose
+- Node.js 18+ (for local development)
+- Python 3.9+ (for local development)
 
-```sh
+### Running with Docker
+```bash
+# Clone the repository
+git clone <repository-url>
+cd conversation-voice-analyser
+
+# Start the application
 docker-compose up --build
+
+# Access the application
+# Frontend: http://localhost
+# Backend API: http://localhost:8000
 ```
 
-## Azure Deployment
-### 1. Login to Azure and Create a Resource Group
-```sh
-az login
-az group create --name voice-analyzer-rg --location "East US"
+### Local Development
+```bash
+# Backend setup
+cd backend
+python -m venv venv
+source venv/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload
+
+# Frontend setup (in new terminal)
+cd frontend_react
+npm install
+npm run dev
 ```
 
-### 2. Deploy with Terraform
-```sh
-cd terraform
-terraform init
-terraform apply -auto-approve
+## Usage Guide
+
+### 1. Recording Audio
+- Click "Start Recording" button
+- Speak into your microphone
+- Click "Stop Recording" when finished
+- View real-time transcription
+
+### 2. Language Selection
+- Choose from 15+ supported languages
+- Use "Auto-detect" for automatic language detection
+- Language affects transcription accuracy
+
+### 3. Viewing Recording History
+- All recordings appear below the recorder
+- Click "Play" to listen to recordings
+- Click "Details" for full transcript and speaker info
+- Click "Delete" to remove recordings
+
+### 4. Speaker Identification
+- Automatic detection of multiple speakers
+- Shows speaker timestamps
+- Displays total speaker count
+
+## Supported Languages
+- English (US/UK)
+- Spanish
+- French
+- German
+- Italian
+- Portuguese (Brazil/Portugal)
+- Russian
+- Japanese
+- Korean
+- Chinese (Simplified)
+- Arabic
+- Hindi
+
+## Privacy & Security
+- All processing happens locally
+- No cloud services required
+- Audio stored in local SQLite database
+- No external API calls for sensitive data
+
+## API Endpoints
+
+### Backend API
+```
+POST   /transcribe/              # Process and save recording
+GET    /recordings/              # List all recordings
+GET    /recordings/{id}          # Get recording details
+GET    /recordings/{id}/audio    # Download audio file
+DELETE /recordings/{id}          # Delete recording
 ```
 
-### 3. Push Docker Images to Azure Container Registry
-```sh
-docker tag backend myregistry.azurecr.io/backend
-docker tag frontend myregistry.azurecr.io/frontend
-docker push myregistry.azurecr.io/backend
-docker push myregistry.azurecr.io/frontend
-```
+## Troubleshooting
 
-### 4. Deploy Services to Azure
-```sh
-az webapp create --resource-group voice-analyzer-rg --plan voice-analyzer-plan \
-  --name voice-analyzer-api --deployment-container-image-name myregistry.azurecr.io/backend
+### Common Issues
 
-az webapp create --resource-group voice-analyzer-rg --plan voice-analyzer-plan \
-  --name voice-analyzer-ui --deployment-container-image-name myregistry.azurecr.io/frontend
-```
+1. **Microphone Access Denied**
+   - Check browser permissions
+   - Ensure HTTPS or localhost
+   - Allow microphone access when prompted
 
-## Next Steps
-- Implement **real-time streaming transcription**
-- Enhance **UI visualization** for speaker differentiation
-- Optimize **performance for large-scale audio files**
+2. **Docker Build Fails**
+   ```bash
+   docker system prune -f
+   docker-compose build --no-cache
+   ```
+
+3. **Audio Not Recording**
+   - Check microphone is connected
+   - Test in browser settings
+   - Restart Docker containers
+
+## Future Enhancements
+- Real-time streaming transcription
+- Advanced speaker recognition
+- Export transcripts to various formats
+- Enhanced visualisation of conversations
+- Cloud deployment options
+- Mobile responsive improvements
 
 ## Contributing
-Pull requests are welcome! To contribute:
-1. Fork the repository.
-2. Create a feature branch.
-3. Commit changes and push.
-4. Submit a pull request.
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
-## License
-MIT License
+## Licence
+MIT Licence - See LICENCE file for details
 
+## Documentation
+
+- [Architecture Overview](docs/ARCHITECTURE.md) - System design and technical details
+- [User Guide](docs/USER_GUIDE.md) - Detailed usage instructions with visuals
+- [Feature Documentation](docs/FEATURES.md) - Complete feature set and roadmap
+
+## Acknowledgements
+- Google Web Speech API for transcription
+- WebRTC VAD for voice activity detection
+- FastAPI and React communities
+
+---
+
+<div align="center">
+  <p>Built with care for better conversation analysis</p>
+  <p>
+    <a href="https://github.com/yourusername/conversation-voice-analyser">GitHub</a> •
+    <a href="docs/USER_GUIDE.md">User Guide</a> •
+    <a href="docs/ARCHITECTURE.md">Architecture</a> •
+    <a href="#contributing">Contribute</a>
+  </p>
+</div>

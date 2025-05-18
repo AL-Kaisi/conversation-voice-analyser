@@ -1,6 +1,14 @@
 # Use Python 3.9 as the base image
 FROM python:3.9
 
+# Install audio processing dependencies
+RUN apt-get update && apt-get install -y \
+    portaudio19-dev \
+    python3-pyaudio \
+    ffmpeg \
+    flac \
+    && rm -rf /var/lib/apt/lists/*
+
 # Set the working directory inside the container
 WORKDIR /app
 

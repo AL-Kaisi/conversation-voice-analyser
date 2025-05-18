@@ -1,0 +1,22 @@
+.App {
+  text-align: center;
+  min-height: 100vh;
+  background-color: #f0f0f0;
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+}
+
+.App-header h1 {
+  margin: 0;
+  font-size: 2.5rem;
+}
+
+main {
+  padding: 40px 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
