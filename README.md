@@ -4,14 +4,14 @@
   <img src="https://img.shields.io/badge/Python-3.9+-blue.svg" alt="Python">
   <img src="https://img.shields.io/badge/React-18.0+-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/FastAPI-0.100+-009688.svg" alt="FastAPI">
-  <img src="https://img.shields.io/badge/Azure-Speech_Services-0078D4.svg" alt="Azure">
+  <img src="https://img.shields.io/badge/SpeechRecognition-3.8+-green.svg" alt="SpeechRecognition">
   <img src="https://img.shields.io/badge/Docker-Enabled-2496ED.svg" alt="Docker">
-  <img src="https://img.shields.io/badge/Terraform-IaC-7B42BC.svg" alt="Terraform">
+  <img src="https://img.shields.io/badge/SQLite-Database-003B57.svg" alt="SQLite">
 </p>
 
 ## Overview
 
-The **Conversation Voice Analyser** is a powerful end-to-end application that records, transcribes, and analyses speech whilst distinguishing between multiple speakers. Perfect for meetings, interviews, and conversations!
+The **Conversation Voice Analyser** is a powerful end-to-end application that records, transcribes, and analyses speech whilst distinguishing between multiple speakers using local speech recognition. Perfect for meetings, interviews, and conversations!
 
 ## Architecture
 
@@ -26,36 +26,33 @@ graph TB
         AR[Audio Recorder]
         SP[Speech Processor]
         D[Diarisation Engine]
+        DB[SQLite Database]
     end
     
-    subgraph Azure Services
-        AST[Azure Speech-to-Text]
-        ADB[Azure SQL Database]
-        ACR[Azure Container Registry]
-        AAS[Azure App Service]
+    subgraph Libraries
+        SR[Google Speech Recognition]
+        VAD[WebRTC VAD]
     end
     
     UI -->|Audio Upload| API
     API --> AR
     AR --> SP
-    SP --> AST
-    AST -->|Transcription| D
-    D -->|Speaker Data| ADB
+    SP --> SR
+    SP --> VAD
+    VAD --> D
+    D -->|Speaker Data| DB
+    SP -->|Transcription| DB
     API -->|Results| UI
-    
-    API -->|Docker Images| ACR
-    ACR --> AAS
 ```
 
 ## Features
 
 - **Speech Recording:** Capture and save high-quality audio files
-- **Speech Recognition:** Convert speech to text using Azure Speech-to-Text
-- **Speaker Diarisation:** Identify and differentiate multiple speakers
-- **Database Storage:** Store transcriptions in Azure SQL Database
+- **Speech Recognition:** Convert speech to text using Google Speech Recognition
+- **Speaker Diarisation:** Identify and differentiate multiple speakers using voice activity detection
+- **Database Storage:** Store transcriptions locally in SQLite database
 - **Modern Web Interface:** React-based frontend for seamless user experience
-- **Cloud Deployment:** Fully integrated with Azure services
-- **Infrastructure as Code:** Deploy with Terraform
+- **Multi-language Support:** Automatic language detection (English and Spanish)
 - **Containerisation:** Run anywhere with Docker
 
 ## Data Flow
@@ -65,16 +62,17 @@ sequenceDiagram
     participant User
     participant React UI
     participant FastAPI
-    participant Azure Speech
-    participant Azure SQL
+    participant Speech Recognition
+    participant VAD
+    participant SQLite
     
     User->>React UI: Upload Audio File
     React UI->>FastAPI: Send Audio
-    FastAPI->>Azure Speech: Process Audio
-    Azure Speech-->>FastAPI: Return Transcription
-    FastAPI->>Azure Speech: Diarise Speakers
-    Azure Speech-->>FastAPI: Return Speaker Data
-    FastAPI->>Azure SQL: Store Results
+    FastAPI->>Speech Recognition: Process Audio
+    Speech Recognition-->>FastAPI: Return Transcription
+    FastAPI->>VAD: Detect Voice Activity
+    VAD-->>FastAPI: Identify Speakers
+    FastAPI->>SQLite: Store Results
     FastAPI-->>React UI: Return Analysis
     React UI-->>User: Display Results
 ```
@@ -101,7 +99,6 @@ conversation-voice-analyser/
 │   └── Dockerfile            # Container config
 │
 ├── docker-compose.yml         # Multi-container setup
-├── terraform/                 # Infrastructure
 └── README.md                 # Documentation
 ```
 
@@ -114,8 +111,7 @@ Make sure you have these tools installed:
 | Python | 3.9+ | Backend development |
 | Node.js | 16+ | Frontend development |
 | Docker | 20+ | Containerisation |
-| Terraform | 1.0+ | Infrastructure deployment |
-| Azure CLI | 2.0+ | Cloud deployment |
+| FFmpeg | 4.0+ | Audio processing |
 
 ## Quick Start
 
@@ -164,73 +160,36 @@ npm install
 npm run dev
 ```
 
-## Azure Deployment
-
-```mermaid
-graph LR
-    subgraph Resource Group
-        ACR[Container Registry]
-        AAS1[App Service - API]
-        AAS2[App Service - UI]
-        SQL[SQL Database]
-        ST[Speech Services]
-    end
-    
-    Local[Local Docker] -->|Push| ACR
-    ACR -->|Deploy| AAS1
-    ACR -->|Deploy| AAS2
-    AAS1 <--> SQL
-    AAS1 <--> ST
-```
-
-### Deploy Infrastructure
-
-```bash
-# Login to Azure
-az login
-
-# Create resource group
-az group create --name voice-analyser-rg --location "UK South"
-
-# Deploy with Terraform
-cd terraform
-terraform init
-terraform apply -auto-approve
-```
-
-### Deploy Applications
-
-```bash
-# Build and push Docker images
-docker build -t backend ./backend
-docker build -t frontend ./frontend_react
-
-# Tag for Azure registry
-docker tag backend myregistry.azurecr.io/backend
-docker tag frontend myregistry.azurecr.io/frontend
-
-# Push to registry
-docker push myregistry.azurecr.io/backend
-docker push myregistry.azurecr.io/frontend
-```
-
 ## Configuration
 
 ### Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file in the backend directory:
 
 ```env
-# Azure Speech Services
-AZURE_SPEECH_KEY=your_speech_key
-AZURE_SPEECH_REGION=uksouth
-
-# Database
-DATABASE_URL=your_azure_sql_connection_string
+# Database Configuration
+DATABASE_URL=sqlite:///./transcriptions.db
 
 # API Configuration
-API_URL=http://localhost:8000
+API_HOST=0.0.0.0
+API_PORT=8000
 ```
+
+## Dependencies
+
+### Backend (Python)
+- **FastAPI**: Modern web framework for building APIs
+- **SpeechRecognition**: Google Speech Recognition integration
+- **PyAudio**: Audio input/output
+- **webrtcvad**: Voice Activity Detection
+- **SQLAlchemy**: Database ORM
+- **Pydub**: Audio file manipulation
+
+### Frontend (React)
+- **React 18**: UI framework
+- **TypeScript**: Type-safe JavaScript
+- **Axios**: HTTP client
+- **Vite**: Build tool
 
 ## Testing
 
@@ -249,16 +208,22 @@ npm test
 - Supports audio files up to 100MB
 - Processes 1 hour of audio in ~2 minutes
 - Handles up to 10 concurrent users
-- 99.9% uptime on Azure deployment
+- Multi-threaded audio processing
+
+## Limitations
+
+- Google Speech Recognition requires internet connection
+- Free tier has usage limitations (50 requests/day)
+- Best results with clear audio and minimal background noise
 
 ## Roadmap
 
 - [ ] Real-time streaming transcription
-- [ ] Multi-language support
-- [ ] Advanced analytics dashboard
-- [ ] Mobile app development
-- [ ] Webhook integrations
-- [ ] Custom ML models for domain-specific vocabulary
+- [ ] Additional language support
+- [ ] Advanced speaker identification using ML
+- [ ] Offline speech recognition option
+- [ ] Audio enhancement features
+- [ ] Export to multiple formats (PDF, DOCX)
 
 ## Contributing
 
@@ -276,8 +241,14 @@ This project is licensed under the MIT Licence - see the [LICENCE](LICENCE) file
 
 ## Acknowledgements
 
-- Azure Speech Services for transcription capabilities
+- Google Speech Recognition API for transcription capabilities
+- WebRTC VAD for voice activity detection
 - FastAPI for the powerful backend framework
 - React community for the amazing frontend ecosystem
 - All contributors who help improve this project
 
+---
+
+<p align="center">
+  Made with ❤️ by the Conversation Voice Analyser Team
+</p>
